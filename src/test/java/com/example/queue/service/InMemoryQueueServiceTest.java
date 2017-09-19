@@ -1,13 +1,8 @@
 package com.example.queue.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,7 +111,6 @@ public class InMemoryQueueServiceTest {
 		latch.await();
 
 		verify(this.queueServiceHelper, times(executionTimes)).recieveMessage(anyString());
-		// assertEquals(0, this.queueServiceHelper.getMessageCount("queue1"));
 		assertEquals(0, sentMessages.size());
 	}
 

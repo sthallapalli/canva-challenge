@@ -13,10 +13,10 @@ import java.util.logging.Logger;
 import com.amazonaws.services.sqs.model.Message;
 
 /**
- * As ScheduledExecutorService passed by the client, client is responsible for shutting down the 
- * scheduler service.
+ * As ScheduledExecutorService passed by the client, client is responsible for
+ * shutting down the scheduler service.
  * 
- * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a> 
+ * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a>
  * @since 21-Aug-2017
  */
 public class MessageQueue<T extends BlockingDeque<Message>> {
@@ -67,8 +67,7 @@ public class MessageQueue<T extends BlockingDeque<Message>> {
 
 		ScheduledFuture<?> future = this.inFlightMessages.remove(receiptHandle);
 		if (future == null) {
-			LOG.log(Level.SEVERE,
-					"Message not found in inflight messages for receiptHandle [" + receiptHandle + "].");
+			LOG.log(Level.SEVERE, "Message not found in inflight messages for receiptHandle [" + receiptHandle + "].");
 			throw new RuntimeException(
 					"Message not found in inflight messages for receiptHandle [" + receiptHandle + "].");
 		}

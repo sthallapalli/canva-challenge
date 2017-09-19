@@ -1,13 +1,7 @@
 package com.example.queue.service;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,18 +15,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.amazonaws.services.sqs.AmazonSQSClient;
-import com.amazonaws.services.sqs.model.CreateQueueResult;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.ListQueuesResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SendMessageResult;
-import com.example.queue.service.QueueService;
 import com.example.queue.service.impl.AmazonSQSService;
 
 /**
- * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a> 
+ * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a>
  * @since 22-Aug-2017
  */
 
@@ -83,19 +75,7 @@ public class AmazonSQSServiceTest {
 		verify(this.amazonSQSClient, times(1)).deleteMessage(anyString(), anyString());
 	}
 
-
-	
-	//Additional API's
-	
-	@Test
-	public void testCreateQueue() {
-		CreateQueueResult result = new CreateQueueResult();
-		result.setQueueUrl("queue1");
-		when(this.amazonSQSClient.createQueue((anyString()))).thenReturn(result);
-		String queue = this.amazonQueueService.createQueue(anyString(), null);
-		verify(this.amazonSQSClient, times(1)).createQueue(anyString());
-		Assert.assertEquals(queue, "queue1");
-	}
+	// Additional API's
 
 	@Test
 	public void testMessageCount() {
@@ -105,14 +85,6 @@ public class AmazonSQSServiceTest {
 		when(this.amazonSQSClient.getQueueAttributes(anyString(), eq(attrs))).thenReturn(result);
 		int count = this.amazonQueueService.getMessageCount("queue1");
 		Assert.assertEquals(count, 10);
-	}
-
-	@Test
-	public void deleteQueue() {
-		doNothing().when(this.amazonSQSClient).deleteQueue(anyString());
-		boolean deleted = this.amazonQueueService.deleteQueue(anyString());
-		verify(this.amazonSQSClient, times(1)).deleteQueue(anyString());
-		Assert.assertTrue(deleted);
 	}
 
 	@Test

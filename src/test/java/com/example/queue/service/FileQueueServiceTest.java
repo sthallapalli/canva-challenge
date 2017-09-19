@@ -1,13 +1,8 @@
 package com.example.queue.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,40 +25,41 @@ import com.amazonaws.services.sqs.model.Message;
 import com.example.queue.FileQueue;
 import com.example.queue.MessageQueue;
 import com.example.queue.service.QueueService;
-import com.example.queue.service.impl.FileSystemQueueService;
+import com.example.queue.service.impl.FileQueueService;
 import com.example.queue.service.impl.MessageQueueServiceHelper;
 
 /**
- * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a> 
+ * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a>
  * @since 24-Aug-2017
  */
 
-public class FileSystemQueueTest {
+public class FileQueueServiceTest {
 
-	private FileSystemQueueService queueService;
+	private FileQueueService queueService;
 
 	private ExecutorService executorService;
 
 	@Mock
 	private MessageQueueServiceHelper<FileQueue<Message>> queueServiceHelper;
-	
+
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
-		
+
 		File queue = new File("/var/queues");
 		removeDirectory(queue);
 		executorService = Executors.newFixedThreadPool(10);
 		ScheduledExecutorService mockScheduledService = mock(ScheduledExecutorService.class);
 		ConcurrentMap<String, MessageQueue<FileQueue<Message>>> queues = mock(ConcurrentHashMap.class);
-		MessageQueue<FileQueue<Message>> messageQueue = new MessageQueue<>(new FileQueue<>("queue1"), mockScheduledService);
+		MessageQueue<FileQueue<Message>> messageQueue = new MessageQueue<>(new FileQueue<>("queue1"),
+				mockScheduledService);
 		messageQueue.withVisibilityTimeout(200);
 		queues.put(anyString(), eq(messageQueue));
 
-		this.queueService = new FileSystemQueueService(queues);
+		this.queueService = new FileQueueService(queues);
 		this.queueService.setMessageQueueHelper(queueServiceHelper);
 	}
-	
+
 	@Test
 	public void shouldHandleAddToQueueSimultaneously() throws InterruptedException {
 		int executionTimes = 1000;
@@ -80,50 +76,50 @@ public class FileSystemQueueTest {
 				}
 			});
 		}
-		
+
 		runnables.forEach((runnable) -> executorService.submit(runnable));
 		latch.await();
-		
+
 		verify(this.queueServiceHelper, times(executionTimes)).sendMessage(anyString(), anyString());
 		assertEquals(executionTimes, this.queueServiceHelper.getMessageCount("queue1"));
 		executorService.shutdown();
 	}
-	
-	 @Test
-	 public void shouldHandlePollOnQueueSimultaneously() throws InterruptedException {
-		 int executionTimes = 1000;
-		 List<String> sentMessages = Collections.synchronizedList(new ArrayList<>());
-		 String message = "test message body";
-	        for (int i = 0; i < executionTimes; i++) {
-	            sentMessages.add(message);
-	            this.queueService.sendMessage(anyString(), anyString());
-	        }
-	        Message msg = new Message();
-	        msg.setBody(message);
-	        when(this.queueService.recieveMessage(anyString())).thenReturn(msg);
 
-	        final CountDownLatch latch = new CountDownLatch(executionTimes);
-	        List<Runnable> runnables = new ArrayList<>();
-	        for (int i = 0; i < executionTimes; i++) {
-	            runnables.add(() -> {
-	                try {
-		            	String messageBody = queueService.recieveMessage(anyString()).getBody();
-		            	assertTrue(sentMessages.remove(messageBody));
-	                } finally {
-	                	latch.countDown();
-	                }
-	            });
-	        }
-	        runnables.forEach((runnable) -> executorService.submit(runnable));
-	        latch.await();
-	        
-	        verify(this.queueServiceHelper, times(executionTimes)).recieveMessage(anyString());
-	        assertEquals(0, sentMessages.size());
-	 }
+	@Test
+	public void shouldHandlePollOnQueueSimultaneously() throws InterruptedException {
+		int executionTimes = 1000;
+		List<String> sentMessages = Collections.synchronizedList(new ArrayList<>());
+		String message = "test message body";
+		for (int i = 0; i < executionTimes; i++) {
+			sentMessages.add(message);
+			this.queueService.sendMessage(anyString(), anyString());
+		}
+		Message msg = new Message();
+		msg.setBody(message);
+		when(this.queueService.recieveMessage(anyString())).thenReturn(msg);
+
+		final CountDownLatch latch = new CountDownLatch(executionTimes);
+		List<Runnable> runnables = new ArrayList<>();
+		for (int i = 0; i < executionTimes; i++) {
+			runnables.add(() -> {
+				try {
+					String messageBody = queueService.recieveMessage(anyString()).getBody();
+					assertTrue(sentMessages.remove(messageBody));
+				} finally {
+					latch.countDown();
+				}
+			});
+		}
+		runnables.forEach((runnable) -> executorService.submit(runnable));
+		latch.await();
+
+		verify(this.queueServiceHelper, times(executionTimes)).recieveMessage(anyString());
+		assertEquals(0, sentMessages.size());
+	}
 
 	@Test
 	public void shouldHandledelete() throws InterruptedException {
-		int executionTimes = 1000;
+		int executionTimes = 200;
 		List<String> sentMessages = Collections.synchronizedList(new ArrayList<>());
 		String message = "test message body";
 		for (int i = 0; i < executionTimes; i++) {
@@ -150,10 +146,11 @@ public class FileSystemQueueTest {
 		runnables.forEach((runnable) -> executorService.submit(runnable));
 		latch.await();
 
-		verify(this.queueServiceHelper, times(executionTimes)).recieveMessage(anyString());
+		verify(this.queueServiceHelper, times(executionTimes)).deleteMessage(anyString(), anyString());
 		assertEquals(0, this.queueServiceHelper.getMessageCount("queue1"));
 		assertEquals(0, sentMessages.size());
 	}
+
 	@Test
 	public void testVisibilityTimeout() throws InterruptedException {
 
@@ -164,14 +161,14 @@ public class FileSystemQueueTest {
 		messageQueue.withVisibilityTimeout(100);
 		queues.put("queue1", messageQueue);
 
-		QueueService service = new FileSystemQueueService(queues);
+		QueueService service = new FileQueueService(queues);
 		service.sendMessage("queue1", "This is the message");
 		Message msg = service.recieveMessage("queue1");
-		
+
 		// No wait for visibility timeout, we expect null message here.
 		msg = service.recieveMessage("queue1");
 		Assert.assertNull(msg.getBody());
-		
+
 		// Waiting for visibility timeout, we expect the head message here.
 		Thread.sleep(150);
 		msg = service.recieveMessage("queue1");
@@ -180,17 +177,17 @@ public class FileSystemQueueTest {
 	}
 
 	private void removeDirectory(File dir) {
-	    if (dir.isDirectory()) {
-	        File[] files = dir.listFiles();
-	        if (files != null && files.length > 0) {
-	            for (File aFile : files) {
-	                removeDirectory(aFile);
-	            }
-	        }
-	        dir.delete();
-	    } else {
-	        dir.delete();
-	    }
+		if (dir.isDirectory()) {
+			File[] files = dir.listFiles();
+			if (files != null && files.length > 0) {
+				for (File aFile : files) {
+					removeDirectory(aFile);
+				}
+			}
+			dir.delete();
+		} else {
+			dir.delete();
+		}
 	}
 
 }

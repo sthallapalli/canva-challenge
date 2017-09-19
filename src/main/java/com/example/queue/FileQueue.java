@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import com.amazonaws.services.sqs.model.Message;
 
 /**
- * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a> 
+ * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a>
  * @since 22-Aug-2017
  */
 public class FileQueue<T> implements BlockingDeque<T> {
@@ -202,21 +202,20 @@ public class FileQueue<T> implements BlockingDeque<T> {
 		return builder.toString();
 	}
 
-	
 	private void writeMessage(T message) {
 		try (PrintWriter pw = new PrintWriter(new FileWriter(this.messagesFile, true))) {
 			pw.println(getMessageString(message));
 		} catch (IOException e) {
 			LOG.log(Level.SEVERE, "Failed to write the message [" + message + "] to queue file ["
 					+ this.messagesFile.getPath() + "]");
-			throw new RuntimeException("Failed to write the message [" + message + "] to queue file ["
-					+ this.messagesFile.getPath() + "]", e);
+			throw new RuntimeException(
+					"Failed to write the message [" + message + "] to queue file [" + this.messagesFile.getPath() + "]",
+					e);
 		}
 	}
 
-	
-
-	//To make implementation simple, the following methods are unsupported. Can be implemented as per requirements
+	// To make implementation simple, the following methods are unsupported. Can
+	// be implemented as per requirements
 
 	@Override
 	public void addFirst(T message) {

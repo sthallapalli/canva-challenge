@@ -13,19 +13,19 @@ import com.example.queue.MessageQueue;
 import com.google.common.collect.Lists;
 
 /**
- * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a> 
+ * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a>
  * @since 25-Aug-2017
  */
-public class MessageQueueServiceHelper<T extends BlockingDeque<Message>>  {
+public class MessageQueueServiceHelper<T extends BlockingDeque<Message>> {
 
 	private static final Logger LOG = Logger.getLogger(MessageQueueServiceHelper.class.getName());
 
 	private ConcurrentMap<String, MessageQueue<T>> queues;
-	
+
 	public MessageQueueServiceHelper(ConcurrentMap<String, MessageQueue<T>> queues) {
 		this.queues = queues;
 	}
-	
+
 	public void sendMessage(String queueUrl, String messageBody) {
 		this.getQueue(queueUrl).push(prepareMessage(messageBody));
 	}
@@ -38,16 +38,11 @@ public class MessageQueueServiceHelper<T extends BlockingDeque<Message>>  {
 		return this.getQueue(queueUrl).delete(reciepientHandle);
 	}
 
-	
 	// Additional API's
 	public int getMessageCount(String queueUrl) {
 		return this.getQueue(queueUrl).size();
 	}
-	
-	public boolean deleteQueue(String queueUrl) {
-		return (this.queues.remove(queueUrl) != null) ? true : false;
-	}
-	
+
 	public List<String> listQueues() {
 		return Lists.newArrayList(this.queues.keySet());
 	}

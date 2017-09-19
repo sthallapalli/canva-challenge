@@ -3,10 +3,8 @@ package com.example.queue.service.impl;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 
 import com.amazonaws.services.sqs.AmazonSQSClient;
-import com.amazonaws.services.sqs.model.CreateQueueResult;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.ListQueuesResult;
 import com.amazonaws.services.sqs.model.Message;
@@ -15,7 +13,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.example.queue.service.QueueService;
 
 /**
- * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a> 
+ * @author <a href="mailto:sthallapalli@outlook.com">sthallapalli</a>
  * @since 22-Aug-2017
  */
 public final class AmazonSQSService implements QueueService {
@@ -50,15 +48,7 @@ public final class AmazonSQSService implements QueueService {
 		return true;
 	}
 
-
 	// Additional API's
-
-	@Override
-	public String createQueue(String queueUrl, ScheduledExecutorService executorService) {
-		Objects.requireNonNull(queueUrl);
-		CreateQueueResult result = this.sqsClient.createQueue(queueUrl);
-		return result.getQueueUrl();
-	}
 
 	@Override
 	public int getMessageCount(String queueUrl) {
@@ -66,13 +56,6 @@ public final class AmazonSQSService implements QueueService {
 		GetQueueAttributesResult queueAttributes = sqsClient.getQueueAttributes(queueUrl,
 				Arrays.asList("ApproximateNumberOfMessages"));
 		return Integer.valueOf(queueAttributes.getAttributes().get("ApproximateNumberOfMessages"));
-	}
-
-	@Override
-	public boolean deleteQueue(String queueUrl) {
-		Objects.requireNonNull(queueUrl);
-		this.sqsClient.deleteQueue(queueUrl);
-		return true;
 	}
 
 	@Override
